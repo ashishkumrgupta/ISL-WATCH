@@ -1,0 +1,74 @@
+{
+  "expo": {
+    "name": "ISL Watch",
+    "slug": "isl-watch",
+    "version": "0.1.0",
+    "scheme": "islwatch",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "android": {
+      "package": "in.islwatch.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f172a"
+      },
+      "permissions": [
+        "INTERNET"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": false,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "www.youtube.com",
+              "pathPrefix": "/watch"
+            },
+            {
+              "scheme": "https",
+              "host": "youtu.be"
+            },
+            {
+              "scheme": "https",
+              "host": "m.youtube.com",
+              "pathPrefix": "/watch"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "plugins": [
+      [
+        "expo-share-intent",
+        {
+          "disableIOS": true,
+          "androidIntentFilters": [
+            "text/*"
+          ]
+        }
+      ],
+      "expo-asset",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "replace-with-eas-project-id"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "in.islwatch.app"
+    }
+  }
+}
