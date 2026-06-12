@@ -1,16 +1,7 @@
 node_modules/
+web/dist/
 .expo/
-mobile/android/
-mobile/ios/
 dist/
-npm-debug.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.orig.*
-web-build/
 .env
 .env.local
 .DS_Store
@@ -19,3 +10,4 @@ __pycache__/
 *.pyc
 .idea/
 *.iml
+web-build/
