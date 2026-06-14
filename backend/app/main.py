@@ -15,7 +15,7 @@ _WEB_DIST = _REPO_ROOT / "web" / "dist"
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="ASL Watch API", version="0.7.0")
+    app = FastAPI(title="ASL Watch API", version="0.8.0")
 
     app.add_middleware(
         CORSMiddleware,

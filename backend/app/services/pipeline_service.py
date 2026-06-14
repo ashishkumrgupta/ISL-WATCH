@@ -8,6 +8,7 @@ from app.domain.models.caption import CaptionTrack
 from app.domain.models.gloss import GlossTrack
 from app.services.caption_service import CaptionService
 from app.services.gloss_translation_service import GlossTranslationService
+from app.services.sign_coverage_service import compute_sign_coverage
 
 
 @dataclass(frozen=True)
@@ -19,6 +20,7 @@ class PipelineResult:
         payload = {
             "video_id": self.captions.video_id,
             "captions": self.captions.to_dict(),
+            "sign_coverage": compute_sign_coverage(self.gloss).to_dict(),
         }
         if self.gloss is not None:
             payload["gloss"] = self.gloss.to_dict()

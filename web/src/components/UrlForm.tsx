@@ -9,7 +9,7 @@ const DEMO_URL = "https://www.youtube.com/watch?v=jNQXAC9IVRw";
 
 export function UrlForm({ loading, onSubmit }: UrlFormProps) {
   const [url, setUrl] = useState(DEMO_URL);
-  const [sampleOnly, setSampleOnly] = useState(true);
+  const [sampleOnly, setSampleOnly] = useState(false);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -43,7 +43,7 @@ export function UrlForm({ loading, onSubmit }: UrlFormProps) {
           onChange={(event) => setSampleOnly(event.target.checked)}
           disabled={loading}
         />
-        Use bundled sample captions (skip YouTube fetch — good for demos)
+        Use bundled sample captions only (demo: jNQXAC9IVRw — uncheck for other videos)
       </label>
     </form>
   );

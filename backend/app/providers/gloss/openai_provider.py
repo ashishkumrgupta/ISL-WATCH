@@ -9,7 +9,7 @@ from app.core.exceptions import GlossTranslationError
 from app.domain.models.caption import CaptionSentence
 from app.domain.models.gloss import GlossSentence
 
-BATCH_SIZE = 12
+BATCH_SIZE = 8
 
 SYSTEM_PROMPT = """You are an expert American Sign Language (ASL) linguist.
 Convert each English sentence into ASL gloss notation for a signing avatar.
@@ -28,9 +28,9 @@ Non-manual markers (append in brackets after gloss, space-separated):
 - [top] topicalization (raised brows)
 
 Output strict JSON only:
-{"items":[{"gloss":"YESTERDAY STORE ME GO","non_manual_markers":[]}]}
+{"items":[{"index":0,"gloss":"YESTERDAY STORE ME GO","non_manual_markers":[]}]}
 
-One item per input sentence, same order. Never skip or merge sentences.
+CRITICAL: Return exactly one item per input sentence, same order, same count. Never skip, merge, or split sentences.
 """
 
 
@@ -65,9 +65,30 @@ class OpenAiGlossProvider:
     def _translate_batch(
         self, client, sentences: list[CaptionSentence]
     ) -> list[GlossSentence]:
-        user_payload = {
+        items = self._request_items(client, sentences)
+        if len(items) != len(sentences):
+            items = self._request_items(
+                client,
+                sentences,
+                reminder=f"Return exactly {len(sentences)} items — one per input sentence.",
+            )
+        if len(items) != len(sentences):
+            items = self._reconcile_items(client, sentences, items)
+        return self._items_to_gloss_sentences(sentences, items)
+
+    def _request_items(
+        self,
+        client,
+        sentences: list[CaptionSentence],
+        *,
+        reminder: str | None = None,
+    ) -> list[dict]:
+        user_payload: dict = {
+            "sentence_count": len(sentences),
             "sentences": [{"index": i, "english": s.text} for i, s in enumerate(sentences)],
         }
+        if reminder:
+            user_payload["reminder"] = reminder
 
         try:
             response = client.chat.completions.create(
@@ -89,6 +110,72 @@ class OpenAiGlossProvider:
         except json.JSONDecodeError as exc:
             raise GlossTranslationError("openai_parse_error", "Invalid JSON from LLM.") from exc
 
+        if not isinstance(items, list):
+            return []
+
+        return self._order_items(items, len(sentences))
+
+    @staticmethod
+    def _order_items(items: list, expected_count: int) -> list[dict]:
+        normalized = [item for item in items if isinstance(item, dict)]
+        if not normalized:
+            return []
+
+        indexed: dict[int, dict] = {}
+        unindexed: list[dict] = []
+        for item in normalized:
+            index = item.get("index")
+            if isinstance(index, int) and 0 <= index < expected_count and index not in indexed:
+                indexed[index] = item
+            else:
+                unindexed.append(item)
+
+        if indexed:
+            ordered: list[dict] = []
+            for i in range(expected_count):
+                if i in indexed:
+                    ordered.append(indexed[i])
+                elif unindexed:
+                    ordered.append(unindexed.pop(0))
+                else:
+                    break
+            ordered.extend(unindexed)
+            return ordered
+
+        return normalized
+
+    def _reconcile_items(
+        self,
+        client,
+        sentences: list[CaptionSentence],
+        items: list[dict],
+    ) -> list[dict]:
+        if len(items) > len(sentences):
+            return items[: len(sentences)]
+
+        result = list(items)
+        for sentence in sentences[len(result) :]:
+            extra = self._request_items(
+                client,
+                [sentence],
+                reminder="Return exactly 1 item for the single input sentence.",
+            )
+            if len(extra) == 1:
+                result.append(extra[0])
+            else:
+                result.append(
+                    {
+                        "gloss": self._normalize_gloss(sentence.text),
+                        "non_manual_markers": [],
+                    }
+                )
+        return result
+
+    def _items_to_gloss_sentences(
+        self,
+        sentences: list[CaptionSentence],
+        items: list[dict],
+    ) -> list[GlossSentence]:
         if len(items) != len(sentences):
             raise GlossTranslationError(
                 "openai_count_mismatch",

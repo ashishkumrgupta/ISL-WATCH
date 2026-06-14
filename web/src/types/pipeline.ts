@@ -13,6 +13,14 @@ export interface GlossTrack {
   sentences: GlossSentence[];
 }
 
+export interface SignCoverageFromApi {
+  library_size: number;
+  total_tokens: number;
+  signed: number;
+  missing: number;
+  coverage_pct: number;
+}
+
 export interface PipelineResponse {
   video_id: string;
   captions: {
@@ -23,6 +31,7 @@ export interface PipelineResponse {
     sentences: { start: number; end: number; text: string }[];
   };
   gloss?: GlossTrack;
+  sign_coverage: SignCoverageFromApi;
 }
 
 export interface HealthResponse {
@@ -30,4 +39,6 @@ export interface HealthResponse {
   milestone: number;
   gloss_enabled: boolean;
   openai_model: string;
+  web_ui?: boolean;
+  avatar_3d?: boolean;
 }

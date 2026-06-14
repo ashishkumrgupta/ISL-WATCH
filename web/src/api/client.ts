@@ -12,11 +12,39 @@ export class ApiError extends Error {
   }
 }
 
+function formatApiDetail(detail: unknown): { message: string; code?: string } {
+  if (!detail) {
+    return { message: "Request failed" };
+  }
+  if (typeof detail === "string") {
+    return { message: detail };
+  }
+  if (Array.isArray(detail)) {
+    const message = detail
+      .map((item) => {
+        if (typeof item === "object" && item && "msg" in item) {
+          return String((item as { msg: unknown }).msg);
+        }
+        return String(item);
+      })
+      .join("; ");
+    return { message: message || "Validation error" };
+  }
+  if (typeof detail === "object" && detail) {
+    const record = detail as { code?: string; message?: string };
+    return {
+      message: record.message ?? "Request failed",
+      code: record.code,
+    };
+  }
+  return { message: "Request failed" };
+}
+
 async function parseJson<T>(response: Response): Promise<T> {
-  const payload = (await response.json()) as T & { detail?: { code?: string; message?: string } };
+  const payload = (await response.json()) as T & { detail?: unknown };
   if (!response.ok) {
-    const detail = payload.detail;
-    throw new ApiError(detail?.message ?? response.statusText, detail?.code);
+    const { message, code } = formatApiDetail(payload.detail);
+    throw new ApiError(message || response.statusText, code);
   }
   return payload;
 }

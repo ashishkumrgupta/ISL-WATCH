@@ -32,12 +32,15 @@ export default function App() {
       const result = await runPipeline(url, { sampleOnly, includeGloss: true });
       setPipeline(result);
     } catch (err) {
-      const message =
+      let message =
         err instanceof ApiError
           ? err.message
           : err instanceof Error
             ? err.message
             : "Failed to load pipeline";
+      if (sampleOnly && err instanceof ApiError && err.code === "sample_not_found") {
+        message = `${message} Uncheck "bundled sample captions" for videos other than the demo.`;
+      }
       setError(message);
       setPipeline(null);
     } finally {
@@ -47,11 +50,16 @@ export default function App() {
 
   return (
     <div className="app">
+      <div className="research-banner" role="note">
+        <strong>Research preview</strong> — Gloss translation is experimental. Sign video is not
+        available until Phase 1. We do not show fake sign animations.
+      </div>
+
       <header className="app__header">
         <div>
           <h1>ASL Watch</h1>
           <p className="app__tagline">
-            YouTube captions → ASL gloss, synced to playback (Milestone 3)
+            YouTube captions → ASL gloss (sign library coming in Phase 1)
           </p>
         </div>
         {health && (
@@ -72,7 +80,13 @@ export default function App() {
         </div>
       )}
 
-      {pipeline && <PlayerStage videoId={pipeline.video_id} gloss={pipeline.gloss ?? null} />}
+      {pipeline && (
+        <PlayerStage
+          videoId={pipeline.video_id}
+          gloss={pipeline.gloss ?? null}
+          signCoverage={pipeline.sign_coverage}
+        />
+      )}
     </div>
   );
 }

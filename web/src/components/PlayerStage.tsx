@@ -1,22 +1,31 @@
 import { useMemo } from "react";
 
-import type { GlossTrack } from "../types/pipeline";
+import type { GlossTrack, SignCoverageFromApi } from "../types/pipeline";
 import { findActiveSentence } from "../utils/gloss";
+import { getActiveGlossToken } from "../signing/glossClipRegistry";
 import { useYouTubePlayer } from "../hooks/useYouTubePlayer";
-import { GlossCanvas } from "./GlossCanvas";
+import { CoverageBadge } from "./CoverageBadge";
+import { GlossTokenPanel } from "./GlossTokenPanel";
+import { SignLibraryPanel } from "./SignLibraryPanel";
 
 interface PlayerStageProps {
   videoId: string;
   gloss: GlossTrack | null;
+  signCoverage: SignCoverageFromApi;
 }
 
-export function PlayerStage({ videoId, gloss }: PlayerStageProps) {
+export function PlayerStage({ videoId, gloss, signCoverage }: PlayerStageProps) {
   const { containerRef, currentTime, isReady, isPlaying } = useYouTubePlayer(videoId);
 
   const activeSentence = useMemo(() => {
     if (!gloss) return null;
     return findActiveSentence(gloss.sentences, currentTime);
   }, [gloss, currentTime]);
+
+  const activeGlossToken = useMemo(
+    () => getActiveGlossToken(activeSentence, currentTime, isPlaying),
+    [activeSentence, currentTime, isPlaying],
+  );
 
   return (
     <section className="player-stage">
@@ -38,9 +47,15 @@ export function PlayerStage({ videoId, gloss }: PlayerStageProps) {
             )}
           </p>
         </header>
-        <GlossCanvas sentence={activeSentence} currentTime={currentTime} isPlaying={isPlaying} />
+        <CoverageBadge coverage={signCoverage} />
+        <SignLibraryPanel activeGlossToken={activeGlossToken} isPlaying={isPlaying} />
+        <GlossTokenPanel
+          sentence={activeSentence}
+          currentTime={currentTime}
+          isPlaying={isPlaying}
+        />
         <p className="player-stage__hint">
-          Milestone 3: timed gloss on canvas. Milestone 4 replaces the silhouette with a 3D signer.
+          Phase 0: honest gloss-only mode. Next step is a real sign video library (Phase 1).
         </p>
       </aside>
     </section>

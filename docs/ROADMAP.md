@@ -30,37 +30,39 @@ Requires `OPENAI_API_KEY` in `backend/.env`.
 
 **Goal:** UI where video plays and gloss is shown in sync with playback.
 
-**Stack:** React, TypeScript, Vite, YouTube IFrame Player API, HTML5 canvas.
+**Stack:** React, TypeScript, Vite, YouTube IFrame Player API.
 
 **Location:** `web/` — see [WEB_PLAYER.md](WEB_PLAYER.md)
 
+---
+
+## Milestone 4: Rigged 3D Avatar System ✅
+
+**Goal:** WebGL rigged humanoid signer in the player panel.
+
+**Stack:** Three.js, React Three Fiber, glTF/GLB.
+
+**Location:** `web/src/components/avatar/` — see [AVATAR.md](AVATAR.md)
+
 **Run:**
 ```bash
-# Dev: backend on :8000 + web on :5173
-cd web && npm run dev
-
-# Or single server after build
-cd web && npm run build
-cd ../backend && uvicorn app.main:app --host 0.0.0.0 --port 8000
+cd web
+npm install
+npm run fetch-avatar   # if model missing
+npm run dev
 ```
 
-The canvas shows a **placeholder signer silhouette**; Milestone 4 replaces it with a 3D avatar.
+Idle animation plays; gloss sync is visual-only until Milestone 5.
 
 ---
 
-## Milestone 4: Rigged 3D Avatar System (next)
-
-**Goal:** High-fidelity digital human capable of signing.
-
-**Stack:** Three.js or Babylon.js, WebGL, rigged GLTF/FBX.
-
----
-
-## Milestone 5: Gloss-to-Animation Mapping Bridge
+## Milestone 5: Gloss-to-Animation Mapping Bridge (prototype)
 
 **Goal:** Drive the 3D rig from gloss strings.
 
-**Stack:** JavaScript animation interpolation / keyframing.
+**Current:** Placeholder body clips per gloss token.
+
+**Next:** Real ASL sign library — see [REAL_ASL.md](REAL_ASL.md).
 
 ---
 
@@ -71,5 +73,6 @@ The canvas shows a **placeholder signer silhouette**; Milestone 4 replaces it wi
 | 1 — Captions | **Done** |
 | 2 — Gloss LLM | **Done** |
 | 3 — Web player | **Done** |
-| 4 — 3D avatar | **Next** |
-| 5 — Gloss → animation | Planned |
+| 4 — 3D avatar | **Done** |
+| 5 — Gloss → animation | **Prototype** (see [REAL_ASL.md](REAL_ASL.md)) |
+| Real ASL quality | **Planned** — [REAL_ASL_PLAN.md](REAL_ASL_PLAN.md) (scalability + coverage model) |

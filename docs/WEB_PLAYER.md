@@ -11,7 +11,7 @@ A browser UI where a YouTube video plays alongside an ASL gloss overlay that tra
 | UI | React 19 + TypeScript |
 | Bundler | Vite 6 |
 | Video | [YouTube IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) |
-| Overlay | HTML5 `<canvas>` (placeholder signer until M4) |
+| Overlay | Gloss token panel + Three.js rigged avatar |
 | Data | `POST /api/pipeline` from the FastAPI backend |
 
 ## User flow
@@ -30,7 +30,7 @@ sequenceDiagram
   loop Every 100ms while playing
     Web->>YT: getCurrentTime()
     Web->>Web: findActiveSentence + highlight token
-    Web->>Web: redraw GlossCanvas
+    Web->>Web: highlight gloss token + idle avatar
   end
 ```
 
@@ -41,7 +41,7 @@ Each gloss sentence has `start` and `end` (seconds). On each time tick:
 1. Find the sentence where `start <= t < end`.
 2. Split `gloss` on whitespace into tokens (e.g. `HERE ELEPHANT COOL`).
 3. Map playback progress within the sentence to an active token index.
-4. Draw tokens on canvas; active token uses highlight styling.
+4. Highlight the active token in the gloss panel; the 3D avatar plays idle animation (signing in Milestone 5).
 
 Word-level gloss timing is not available yet — tokens are distributed evenly across the sentence duration. Milestone 5 may add per-sign timing.
 
@@ -54,6 +54,10 @@ Word-level gloss timing is not available yet — tokens are distributed evenly a
 
 In dev, Vite proxies `/api` and `/health` to the backend. In production, FastAPI serves `web/dist/` at `/` after API routes are registered.
 
-## Next: Milestone 4
+## 3D avatar (Milestone 4)
 
-Replace the canvas silhouette in `GlossCanvas.tsx` with a Three.js rigged avatar while keeping the same gloss sync hooks from `utils/gloss.ts`.
+The sidebar includes a React Three Fiber viewport with a rigged GLB model. See [AVATAR.md](AVATAR.md).
+
+## Next: Milestone 5
+
+Map active gloss tokens to sign animation clips in `web/src/signing/`.
